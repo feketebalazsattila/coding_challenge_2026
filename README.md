@@ -32,6 +32,11 @@ Run unit tests:
 uv run pytest
 ```
 
+Application runtime parameters live in `config/app.json`, including the SQLite
+database path, Ollama model settings, API title, and log file settings. To use a
+different config file, set `MOVIE_AGENT_CONFIG` to the JSON file path before
+starting the app.
+
 The pre-commit hook formats Python files with Ruff, applies safe Ruff fixes,
 checks Python syntax, runs unit tests with Pytest, scans for secrets with
 detect-secrets, and lints YAML and Markdown files. The commit-msg hook validates

@@ -1,11 +1,15 @@
 from __future__ import annotations
 
+import logging
+
 from pydantic import BaseModel, Field
 
 from context_builder import build_movie_context
 from llm.base import AnswerGenerator, QueryParser
 from query_processing import ParsedMovieQuery
 from retrieval import MovieRetriever, MovieSearchResult
+
+logger = logging.getLogger(__name__)
 
 
 class MovieResult(BaseModel):
@@ -49,9 +53,21 @@ class MovieAgentService:
         self.answer_generator = answer_generator
 
     async def answer(self, message: str) -> MovieAgentResponse:
+        logger.info("Starting movie agent pipeline.")
         parsed_query = await self.query_parser.parse(message)
+        logger.info(
+            "Query parsed. intent=%s title=%s genres=%s "
+            "year_from=%s year_to=%s limit=%s",
+            parsed_query.intent,
+            parsed_query.title,
+            parsed_query.genres,
+            parsed_query.year_from,
+            parsed_query.year_to,
+            parsed_query.limit,
+        )
 
         if parsed_query.needs_clarification:
+            logger.info("Query needs clarification.")
             return MovieAgentResponse(
                 answer=(
                     parsed_query.clarification_question
@@ -62,12 +78,15 @@ class MovieAgentService:
             )
 
         movies = self.retriever.search(parsed_query)
+        logger.info("Retrieved %s movies from SQLite.", len(movies))
         context = build_movie_context(movies)
+        logger.info("Built movie context for answer generation.")
 
         answer = await self.answer_generator.generate(
             question=message,
             context=context,
         )
+        logger.info("Generated final answer.")
 
         return MovieAgentResponse(
             answer=answer,

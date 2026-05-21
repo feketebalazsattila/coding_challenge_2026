@@ -1,0 +1,18 @@
+{
+  "app": {
+    "title": "Movie Agent API",
+    "root_message": "Movie Agent API is running. Open /docs to try the API."
+  },
+  "database": {
+    "path": "data/movies.sqlite"
+  },
+  "ollama": {
+    "model": "gemma4:e2b",
+    "base_url": "http://localhost:11434",
+    "timeout_seconds": 300.0
+  },
+  "logging": {
+    "level": "INFO",
+    "file": "logs/app.log"
+  }
+}

@@ -114,14 +114,22 @@ def test_query_parser_rejects_invalid_llm_json() -> None:
     FakeAsyncClient.response = FakeResponse(
         {"message": {"content": json.dumps({"intent": "not_an_intent"})}}
     )
-    parser = OllamaQueryParser(base_url="http://ollama.test")
+    parser = OllamaQueryParser(
+        model="test-model",
+        base_url="http://ollama.test",
+        timeout_seconds=60.0,
+    )
 
     with pytest.raises(QueryParsingError, match="does not match ParsedMovieQuery"):
         asyncio.run(parser.parse("Find movies"))
 
 
 def test_query_parser_rejects_empty_message_without_calling_ollama() -> None:
-    parser = OllamaQueryParser(base_url="http://ollama.test")
+    parser = OllamaQueryParser(
+        model="test-model",
+        base_url="http://ollama.test",
+        timeout_seconds=60.0,
+    )
 
     with pytest.raises(QueryParsingError, match="empty user message"):
         asyncio.run(parser.parse("   "))
@@ -165,14 +173,22 @@ def test_answer_generator_wraps_http_status_errors() -> None:
         status_code=404,
         text="model not found",
     )
-    generator = OllamaAnswerGenerator(base_url="http://ollama.test")
+    generator = OllamaAnswerGenerator(
+        model="answer-model",
+        base_url="http://ollama.test",
+        timeout_seconds=60.0,
+    )
 
     with pytest.raises(AnswerGenerationError, match="failed with status 404"):
         asyncio.run(generator.generate("Recommend a movie", "Movie context"))
 
 
 def test_answer_generator_rejects_empty_context_without_calling_ollama() -> None:
-    generator = OllamaAnswerGenerator(base_url="http://ollama.test")
+    generator = OllamaAnswerGenerator(
+        model="answer-model",
+        base_url="http://ollama.test",
+        timeout_seconds=60.0,
+    )
 
     with pytest.raises(AnswerGenerationError, match="without movie context"):
         asyncio.run(generator.generate("Recommend a movie", "   "))

@@ -9,7 +9,6 @@ from pydantic import ValidationError
 from llm.base import QueryParsingError
 from query_processing import ParsedMovieQuery
 
-
 QUERY_PARSER_SYSTEM_PROMPT = """
 You are a query parser for a movie REST API.
 
@@ -61,9 +60,9 @@ class OllamaQueryParser:
 
     def __init__(
         self,
-        model: str = "gemma4:e2b",
-        base_url: str = "http://localhost:11434",
-        timeout_seconds: float = 60.0,
+        model: str,
+        base_url: str,
+        timeout_seconds: float,
     ) -> None:
         self.model = model
         self.base_url = base_url.rstrip("/")
@@ -106,9 +105,7 @@ class OllamaQueryParser:
             return ParsedMovieQuery.model_validate_json(content)
 
         except httpx.HTTPError as exc:
-            raise QueryParsingError(
-                "Ollama query parser request failed."
-            ) from exc
+            raise QueryParsingError("Ollama query parser request failed.") from exc
 
         except (KeyError, TypeError, json.JSONDecodeError) as exc:
             raise QueryParsingError(
@@ -131,8 +128,6 @@ class OllamaQueryParser:
         content = response_json["message"]["content"]
 
         if not isinstance(content, str) or not content.strip():
-            raise QueryParsingError(
-                "Ollama returned an empty query parser response."
-            )
+            raise QueryParsingError("Ollama returned an empty query parser response.")
 
         return content

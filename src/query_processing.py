@@ -1,9 +1,9 @@
-from enum import Enum
+from enum import StrEnum
 
 from pydantic import BaseModel, ConfigDict, Field
 
 
-class QueryIntent(str, Enum):
+class QueryIntent(StrEnum):
     """Supported high-level movie query intents."""
 
     MOVIE_LOOKUP = "movie_lookup"
@@ -15,7 +15,7 @@ class QueryIntent(str, Enum):
     UNKNOWN = "unknown"
 
 
-class SortBy(str, Enum):
+class SortBy(StrEnum):
     """Supported sorting options for movie retrieval."""
 
     RELEVANCE = "relevance"
@@ -38,9 +38,7 @@ class ParsedMovieQuery(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    intent: QueryIntent = Field(
-        description="The user's movie-related intent."
-    )
+    intent: QueryIntent = Field(description="The user's movie-related intent.")
 
     title: str | None = Field(
         default=None,

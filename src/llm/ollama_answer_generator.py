@@ -6,11 +6,11 @@ import httpx
 
 from llm.base import AnswerGenerationError
 
-
 ANSWER_SYSTEM_PROMPT = """
 You are a helpful conversational movie assistant.
 
-Your task is to answer the user's question using only the provided movie database context.
+Your task is to answer the user's question using only the provided movie
+database context.
 
 Important rules:
 - Use only the movie data provided in the context.
@@ -35,9 +35,9 @@ class OllamaAnswerGenerator:
 
     def __init__(
         self,
-        model: str = "gemma4:e2b",
-        base_url: str = "http://localhost:11434",
-        timeout_seconds: float = 60.0,
+        model: str,
+        base_url: str,
+        timeout_seconds: float,
     ) -> None:
         self.model = model
         self.base_url = base_url.rstrip("/")
@@ -45,10 +45,14 @@ class OllamaAnswerGenerator:
 
     async def generate(self, question: str, context: str) -> str:
         if not question.strip():
-            raise AnswerGenerationError("Cannot generate an answer for an empty question.")
+            raise AnswerGenerationError(
+                "Cannot generate an answer for an empty question."
+            )
 
         if not context.strip():
-            raise AnswerGenerationError("Cannot generate an answer without movie context.")
+            raise AnswerGenerationError(
+                "Cannot generate an answer without movie context."
+            )
 
         payload: dict[str, Any] = {
             "model": self.model,
@@ -83,7 +87,8 @@ class OllamaAnswerGenerator:
 
         except httpx.TimeoutException as exc:
             raise AnswerGenerationError(
-                f"Ollama answer generation timed out after {self.timeout_seconds} seconds. "
+                "Ollama answer generation timed out after "
+                f"{self.timeout_seconds} seconds. "
                 "The model may be too slow on CPU or the context may be too long."
             ) from exc
 

@@ -48,4 +48,4 @@ class AnswerGenerator(Protocol):
     """
 
     async def generate(self, question: str, context: str) -> str:
-        """Generate a natural language answer based on the user question and retrieved context."""
+        """Generate an answer based on the user question and retrieved context."""
