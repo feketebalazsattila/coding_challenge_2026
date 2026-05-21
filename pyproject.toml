@@ -9,8 +9,11 @@ dependencies = []
 [dependency-groups]
 dev = [
     "commitizen>=3.29",
+    "detect-secrets>=1.5",
     "pre-commit>=3.8",
+    "pymarkdownlnt>=0.9",
     "ruff>=0.6.9",
+    "yamllint>=1.35",
 ]
 
 [tool.ruff]

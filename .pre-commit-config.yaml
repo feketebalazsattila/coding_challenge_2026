@@ -17,6 +17,24 @@ repos:
         language: system
         types_or: [python, pyi]
 
+      - id: detect-secrets
+        name: detect secrets
+        entry: uv run detect-secrets-hook
+        language: system
+        types: [text]
+
+      - id: yamllint
+        name: yamllint
+        entry: uv run yamllint
+        language: system
+        types: [yaml]
+
+      - id: markdownlint
+        name: markdownlint
+        entry: uv run pymarkdown scan
+        language: system
+        types: [markdown]
+
       - id: commitizen
         name: commitizen check
         entry: uv run cz check --commit-msg-file

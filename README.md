@@ -26,9 +26,10 @@ Run all checks manually:
 uv run pre-commit run --all-files
 ```
 
-The pre-commit hook formats Python files with Ruff, applies safe Ruff fixes, and
-checks Python syntax. The commit-msg hook validates commit messages with
-Commitizen conventional commits, for example:
+The pre-commit hook formats Python files with Ruff, applies safe Ruff fixes,
+checks Python syntax, scans for secrets with detect-secrets, and lints YAML and
+Markdown files. The commit-msg hook validates commit messages with Commitizen
+conventional commits, for example:
 
 ```text
 feat: add challenge parser
