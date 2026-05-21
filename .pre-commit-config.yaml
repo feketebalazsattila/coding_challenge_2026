@@ -10,36 +10,42 @@ repos:
         entry: uv run ruff format
         language: system
         types_or: [python, pyi]
+        stages: [pre-commit]
 
       - id: ruff-check
         name: ruff check
         entry: uv run ruff check --fix
         language: system
         types_or: [python, pyi]
+        stages: [pre-commit]
 
       - id: detect-secrets
         name: detect secrets
         entry: uv run detect-secrets-hook
         language: system
         types: [text]
+        stages: [pre-commit]
 
       - id: yamllint
         name: yamllint
         entry: uv run yamllint
         language: system
         types: [yaml]
+        stages: [pre-commit]
 
       - id: markdownlint
         name: markdownlint
         entry: uv run pymarkdown scan
         language: system
         types: [markdown]
+        stages: [pre-commit]
 
       - id: pytest
         name: pytest
         entry: uv run pytest
         language: system
         pass_filenames: false
+        stages: [pre-commit]
 
       - id: commitizen
         name: commitizen check
