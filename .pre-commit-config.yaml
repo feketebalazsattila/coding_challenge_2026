@@ -35,6 +35,12 @@ repos:
         language: system
         types: [markdown]
 
+      - id: pytest
+        name: pytest
+        entry: uv run pytest
+        language: system
+        pass_filenames: false
+
       - id: commitizen
         name: commitizen check
         entry: uv run cz check --commit-msg-file

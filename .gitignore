@@ -1,5 +1,9 @@
 .venv/
 .ruff_cache/
 .pytest_cache/
+.pytest_tmp/
+.test_tmp/
 __pycache__/
 *.py[cod]
+data/*.csv
+data/*.sqlite
