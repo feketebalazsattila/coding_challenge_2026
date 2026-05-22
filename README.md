@@ -48,6 +48,75 @@ fix: handle empty input
 docs: describe setup
 ```
 
+## Architecture
+
+The application follows a structured-retrieval-plus-LLM architecture.
+
+At startup, the FastAPI application loads runtime configuration from `config/app.json`
+and exposes the `/chat` endpoint. Before running the API, the offline setup script
+loads the TMDB 5000 CSV files into a local SQLite database.
+
+```mermaid
+sequenceDiagram
+    autonumber
+
+    actor User as User / Client
+    participant API as FastAPI POST /chat
+    participant Service as MovieAgentService
+    participant Parser as OllamaQueryParser
+    participant LLM as Ollama /api/chat
+    participant Retriever as MovieRetriever
+    participant DB as SQLite movies.sqlite
+    participant Context as build_movie_context
+    participant Generator as OllamaAnswerGenerator
+
+    User->>API: POST /chat<br/>{ "message": "Recommend high rated action movies after 2010" }
+
+    API->>API: Validate request with Pydantic<br/>ChatRequest.message min_length=1
+    API->>Service: answer(message)
+
+    Service->>Parser: parse(message)
+    Parser->>LLM: LLM call #1<br/>Return JSON matching ParsedMovieQuery schema
+    LLM-->>Parser: structured query JSON
+    Parser-->>Service: ParsedMovieQuery<br/>intent, genres, year_from, min_rating, limit, sort_by
+
+    alt Query needs clarification
+        Service-->>API: clarification answer<br/>movies = []
+        API-->>User: MovieAgentResponse
+    else Query is actionable
+        Service->>Retriever: search(parsed_query)
+        Retriever->>Retriever: Build parameterized SQL filters
+        Retriever->>DB: SELECT movies + genres + ratings
+        DB-->>Retriever: matching movie rows
+        Retriever-->>Service: list[MovieSearchResult]
+
+        Service->>Context: build_movie_context(movies)
+        Context-->>Service: compact factual movie context
+
+        Service->>Generator: generate(question, context)
+        Generator->>LLM: LLM call #2<br/>Generate answer only from context
+        LLM-->>Generator: conversational answer
+        Generator-->>Service: answer text
+
+        Service-->>API: MovieAgentResponse<br/>answer + parsed_query + movies
+        API-->>User: JSON response
+    end
+```
+For each chat request, the system executes the following pipeline:
+
+1. The client sends a natural-language movie question to `POST /chat`.
+2. `OllamaQueryParser` sends the message to the local Ollama chat API and converts it
+   into a validated `ParsedMovieQuery`.
+3. `MovieRetriever` translates the structured query into deterministic, parameterized
+   SQLite queries.
+4. The retrieved movie rows are converted into a compact factual context.
+5. `OllamaAnswerGenerator` sends the original question and retrieved context to Ollama
+   and generates the final conversational response.
+6. The API returns the final answer, the parsed query, and the retrieved movie records.
+
+The LLM is deliberately not allowed to generate SQL. It only produces a structured
+query object and later turns retrieved database facts into a user-friendly answer.
+
 ## Data Setup
 
 The project uses the
@@ -238,6 +307,17 @@ logs/app.log
 The file logger uses rotation with a maximum file size of 5 MB and keeps three
 backup files. Uvicorn access logs and application logs both go through the same
 logging configuration.
+
+## Future Improvements
+
+- Add CI/CD checks for formatting, linting, type checking, unit tests, and integration tests.
+- Add lightweight response quality checks for groundedness, hallucination prevention, fallback behavior, and retrieval relevance.
+- Use a small golden test set with representative movie questions to validate retrieval and response quality.
+- Improve error handling for invalid requests, empty results, database errors, LLM failures, and timeouts.
+- Introduce asynchronous queue processing for slower LLM calls or batch tasks using Celery, RQ, or FastAPI-compatible background workers.
+- Store anonymized chat logs, retrieved context, latency, and error metadata for debugging and quality improvement, with data minimization and limited retention.
+- Improve ranking beyond deterministic SQL sorting. Currently, results are ordered mainly by rating, vote count, year, or title. A future version could add semantic similarity or a lightweight reranker to improve result relevance.
+- Add better fallback responses when the system does not have enough data to answer confidently.
 
 ## Install uv
 
